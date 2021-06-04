@@ -1,0 +1,16 @@
+- name: iSCSI log in or out to a Target
+  hosts: localhost
+  gather_facts: False
+  become: yes
+  collections:
+    - community.general
+  vars:
+    target : "/dev/disk/by-path/ip-10.128.56.50:3260-iscsi-iqn.2010-01.com.solidfire:nfgj.solidbackup-70.175-lun-0"
+    login  : "yes"
+    ansible_sudo_pass: "p@ssw0rd"
+  tasks:
+  - name: Perform log in or out to specified iSCSI target
+    community.general.open_iscsi:
+      target: "{{ target }}"
+      login: "{{ login }}"
+      auto_node_startup: no

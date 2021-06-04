@@ -1,0 +1,25 @@
+- name: Posix mount or unmount
+  hosts: localhost
+  gather_facts: False
+  become: yes
+  collections:
+    - ansible.posix
+
+  vars:
+    src: "/dev/disk/by-path/ip-10.128.56.50:3260-iscsi-iqn.2010-01.com.solidfire:nfgj.vol109.156-lun-0"
+    state: "mounted"
+    path: "/mnt/155"
+    fstype: "ext4"
+    opts: "ro"
+    ansible_sudo_pass: "p@ssw0rd"
+
+  tasks:
+
+  - name: 'Posix Mount'
+    ansible.posix.mount:
+      src: '{{ src }}'
+      path: '{{ path }}'
+      state: '{{ state }}'
+      fstype: '{{ fstype }}'
+      backup: no
+      opts: '{{ opts }}'
