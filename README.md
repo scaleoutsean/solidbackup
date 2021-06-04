@@ -349,10 +349,10 @@ b537573b  2021-06-02 05:11:00  sb          src-id-399,tgt-id-402  /mn4y.solidbac
 Examples:
 
 - To restore file-based backup from latest backup snapshot for /mnt/400:
-`restic restore 2657b54e --target /tmp/file-restore`. Find the file(s) in /tmp/file-restore/mnt/400 directory
+`restic restore 2657b54e --target /tmp/file-restore`. Find the file(s) in the /tmp/file-restore/mnt/400 directory
 
 - To restore latest image-based backup for Tgt Volume Id 401: 
-`restic restore d9de22f9 --target /tmp/image-restore/`. Then unzip (gunzip, gzip -d) the file and write it to a block device
+`restic restore d9de22f9 --target /tmp/image-restore/`. Then unzip (gunzip, gzip -d) the file and write it to a block device of the same size
 
 - To find the latest backup for Source Volume ID 388 (notice there are two, 177b84f9 and d9de22f9):
 
@@ -366,7 +366,7 @@ d9de22f9  2021-06-02 05:10:59  sb          src-id-398,tgt-id-401  /mn4y.solidbac
 1 snapshots
 ```
 
-For more see the docs of the backup utility you use (in this case it's obviously Restic).
+For additional details, see the docs of the backup utility you use (in this case it's obviously Restic).
 
 ### How do I automate restores
 
