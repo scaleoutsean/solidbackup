@@ -348,8 +348,12 @@ b537573b  2021-06-02 05:11:00  sb          src-id-399,tgt-id-402  /mn4y.solidbac
 
 Examples:
 
-- To restore file-based backup from latest backup snapshot for /mnt/400: `restic restore 2657b54e --target /tmp/file-restore`. Find them under /tmp/file-restore/mnt/400.
-- To restore latest image-based backup for Tgt Volume Id 401: `restic restore d9de22f9 --target /tmp/image-restore/`. Then unzip (gunzip, gzip -d) the file and write it to a block device.
+- To restore file-based backup from latest backup snapshot for /mnt/400:
+`restic restore 2657b54e --target /tmp/file-restore`. Find the file(s) in /tmp/file-restore/mnt/400 directory
+
+- To restore latest image-based backup for Tgt Volume Id 401: 
+`restic restore d9de22f9 --target /tmp/image-restore/`. Then unzip (gunzip, gzip -d) the file and write it to a block device
+
 - To find the latest backup for Source Volume ID 388 (notice there are two, 177b84f9 and d9de22f9):
 
 ```sh
@@ -524,15 +528,25 @@ I will spend some time on one particular scenario, though - SolidBackup vs. Soli
 | Application-consistent backup | hard  | easy      | If you can create application-consistent snapshot, SolidSync will clone from that snapshot. See [11] |
 
 [1] SolidSync and SolidBackup need additional effort to secure OS used to run the scripts
+
 [2] SolidBackup doesn't encrypt; backup utility it uses does. If you use Restic, as in first implementation, you get compression and cross-volume deduplication, but deduplication is coarse (not like SolidFire's 4kB granularity). Overall though, because of cross-job and cross-volume efficiencies and other reasons (such as the ability to resume interrupted backup jobs), SolidBackup with 3rd party backup utilities should get better results (meaning, less bandwidht and less S3 space required) overall. 
+
 [3] While SolidFire Backup to S3 supports tags, it's mostly for backup and it's less useful in restore and backup management.
+
 [4] Because SB is a DIY solution, you can do whatever you fancy (for example, change Restic with another engine). SF Backup's biggest advantage is integration in the SolidFire UI, log/event system and "time remaining" metric is available in the UI and via the API.
+
 [5] Let's ignore *file-based* backup because SolidFire backup to S3 doesn't use it. For *image* backup, both approaches read entire volume contents, but SolidFire Backup to S3 uses less compute resources as it runs from SolidFire storage nodes. If you completely emulate SolidFire's Backup to S3 by using SolidBackup fo rimage backup, you'll read the same amount of iSCSI volume data and use network bandwidth to hypervisor/VM.
+
 [6] Assuming you can mount the clone file system (should be fine for ext2, ext3, xfs, and NTFS (maybe in Linux, but certainly in Windows, if you set up a Windows VM)), backup efficiency of SolidBackup is high. Instead of reading the entire 50 GB volume and backing up whatever you find it in, you read the files *you want* (others may be excluded) so instead of backing up 40 GB (even if it gets compressed down to 20 GB), you can backup 10 GB of DB files and compress them to 5 GB. And restore them some 10% of the time (5 GB vs. 40 GB)
+
 [7] If you want to move your workload to cloud, just restore SolidBackup backups to equally sized iSCSI device (image backup) or like filesystem or direct-to-application (file-based backup). If you want to repatriate your workload from the cloud, just restore it onto new SolidFire volume or filesystem as you normally would. SolidFire can replicate data to Cloud Volumes ONTAP asynchronously via SnapMirror (similar to, but not quite, "backup").
+
 [8] NetApp Trident uses unpartitioned volumes (e.g. entire disks are formatted with ext4, ext3, or xfs). SolidFire Backup to S3 is image-based backup so it doesn't care about that, but SolidBackup can go one step ahead and (a) use advanced tagging to tag backups with K8s- or Docker-related tags (this would require such tags to be fetched and added to backup scripts), and (b) Velero backup can backup and restore generic K8s volumes using Restic so it may be possible to restore Restic backups from VMs to containers and vice versa (needs to be evaluated), and (c) there is potential for upload bandwidth saving and S3 capacity saving if the same repo is used by SolidBackup and Restic (also needs to be evaluated). Another detail worth mention is currently NetApp Trident purge-deletes PVs, which means you can't use the usual "recover volume" SolidFire feature. But if you used SolidSync to create a clone volume, you can create a new volume and copy clone to new volume, thereby recovering its contents in seconds.
+
 [9] Based on my experience SolidFire's Backup to S3 obeys the volume's QoS settings (whatever they are). SolidSync uses a custom QoS policy on the clones, so you can get a high Max/Burst performance without setting (pre-backup) and resetting (post-backup) QoS on original volumes
+
 [10] By default, SolidBackup creates clones and keeps them around. That means, unless you change the script to make it work in batches and/or create new clones every time, a cluster with 1,000 volumes will have 1,000 clones lying around, and (thanks to 2x the amount of volumes) consume 2x as much SolidFire metadata space. So as-is, SolidBackup will consume 2x metadata space, 2x inactive volumes, and (during backup) 2x active volumes. SolidBackup could be changed to use less resources, but by default it doesn't because usually this won't be a problem. Incrased active volume connections are the easiest to address as backup commands can be executed in batches with only minor changes to SolidBackup script (to not run Ansible and let the admin run it just-in-time before each backup job).
+
 [11] If you can shutdown or suspend (freeze) your workloads when you initiate SolidSync on the Source volume, you'll get an application-consistent clone. But if you have 300 volumes, it may take 10 minutes for the last CopyVolume job to get dispatched. You could add another volume to each app, and dump (backup) app data to it, which would work fine with both Backup to S3 and SolidSync, but it would increase capacity utilization so E-Series iSCSI storage would be better for this "D2D" approach. For a live application without extra disks, if you can freeze it at 11:49:50 and initiate a SolidFire snapshot at 11:50:00, you can SolidSync it later (as long as your snapshot age is lower than the max set in SolidSync, and that figure can be changed.)
 
 ## What's missing
@@ -541,7 +555,7 @@ A lot, of course. But this is just a starting point for your customization, not 
 
 SolidSync and SolidBackup aim to be bare-bones, simple and generic. 
 
-Some 
+Some things that I'd like to see improved: 
 
 - Rewrite SolidSync to be simpler
 - For SolidSync and SolidBackup, define input parameters and switches to avoid hard-coded configuration values
