@@ -150,7 +150,6 @@ SolidSync and SolidBackup may be for you if at least one of the following is tru
 - Clone this repo
 - Install PowerShell for Linux 7.1.3 or newer
 - Install Restic (copy it to ~/bin of the user who will run all these scripts and add that to user's `$PATH`)
-- Install parallel (`apt-get install parallel`)
 - Install Ansible (version 4.0 works fine) and ansible.posix and community.general
 - Modify SolidSync and and SolidBackup configuration files (below)
 
