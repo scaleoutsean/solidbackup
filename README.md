@@ -68,7 +68,7 @@ Among two other SolidBackup repositories on Github (I realized this too late), o
 | Step 1                      | Step 2                     | Step 3                         | Step 4           |
 | :---                        | :---                       | :---                           | :---             |
 | Prepare clones, config file | SolidSync: copy Src to Tgt | SolidBacup: generate templates | Run bacukp script|
-| Example: see [1]            | Example: see [2]           | Example: see [3]               | Example: see [4] |
+| see [1]                     | see [2]                    | see [3]                        | see [4] |
 
 [1] Example configuration file (with two pairs) and a screenshot of three Src-Tgt volume pairs prepared in SolidFire
 
@@ -129,6 +129,11 @@ sudo dd if=/dev/disk/by-path/ip-192.168.103.30:3260-iscsi-iqn.2010-01.com.solidf
 ```
 
 - Dismount Tgt volumes, and log out of iSCSI targets after you're done
+
+### Demo videos
+
+- [SolidBackup demo](https://youtu.be/y7cFBPqdN7s) - slower-paced demo if you haven't seen it before - 7m31s
+- [SolidFire to the Public Cloud and Back](https://youtu.be/U1uwbqrKU7A) - shows the entire "round trip" for a filesystem based backup and restore - 4m01s
 
 ## Is SolidBackup for you
 
@@ -292,7 +297,7 @@ I'd start with one at a time (as per `./restic-image-backup.sh`) until I make su
 
 With most utilities, you shouldn't, because one node may prune data required by another node. See Restic (or other) documentation.
 
-### What about NTFS filesystems
+### What about NTFS
 
 For NTFS filesystems, install NTFS driver package for Linux and give it a try (both backup *and* restore). Then change SolidBackup to not complain about NTFS.
 
@@ -302,7 +307,7 @@ Or put all NTFS volume pairs under into the "Windows" namespace (in config.psd1)
 
 One is good, if your SolidBackup VM is one, and it can complete job in time.
 
-If it can't, or if you need several, use additioanl backup repositories per cluster (that will decrease efficiency with Restic, as there's no cross-repository deduplication).
+If it can't, or if you need several, use additional backup repositories per cluster (that will decrease efficiency with Restic, as there's no cross-repository deduplication).
 
 ### How can I avoid having one SolidSync or SolidBacup operator have access to all SolidFire (clone) volumes?
 
@@ -314,7 +319,7 @@ It appears it's best to have as few repositories as possible, use file-based bac
 
 ### What about ZFS and other filesystems not listed here
 
-There are ...challenges with automating those.
+There are ... challenges with automating those.
 
 Some (like ZFS) have its own backup/restore utilities, so you should probably consider those first.
 
@@ -347,10 +352,10 @@ b537573b  2021-06-02 05:11:00  sb          src-id-399,tgt-id-402  /mn4y.solidbac
 
 Examples:
 
-- To restore file-based backup from latest backup snapshot for /mnt/400:
+- To restore file-based backup from latest backup snapshot for /mnt/400:  
 `restic restore 2657b54e --target /tmp/file-restore`. Find the file(s) in the /tmp/file-restore/mnt/400 directory
 
-- To restore latest image-based backup for Tgt Volume Id 401: 
+- To restore latest image-based backup for Tgt Volume Id 401:  
 `restic restore d9de22f9 --target /tmp/image-restore/`. Then unzip (gunzip, gzip -d) the file and write it to a block device of the same size
 
 - To find the latest backup for Source Volume ID 388 (notice there are two, 177b84f9 and d9de22f9):
@@ -386,7 +391,7 @@ If the question is how to automate restore from backup repository directly to th
 
 It isn't hard to automate restores: SolidBackup has tags which keep record of Source and Target Volume IDs, so if you "simply" get a list of snapshots and select the most recent one, you will have the Source and Target ID, filename (image backup) or mount point (file backup) and as long as either Source or Target volumes exist, you know the size, and from config.psd1 you have the filesystem and partition number. Then can create a new volume and restore image backup to it. For file-based backups it's much easier - you can restore them anywhere, and you can also mount S3 backup using Restic.
 
-### Backup of SolidBackup configuration file(s)
+### Backup of SolidBackup configuration files
 
 You need a way to know which Target volume ID maps to which Source volume ID, application, what filesystem was used, and how large the volume is (especially for image-based restores as such backups should not be restored to smaller size volumes).
 
@@ -416,9 +421,9 @@ You can backup to a local S3 object store such as NetApp StorageGRID, and config
 
 ### Pull requests
 
-Please submit against the `develop` branch).
+Please submit your pull requests against the `develop` branch.
 
-I can't guarantee I'll add it (if it's something along the lines of things from What's Missing section below, it's more likely), but pull requests are welcome, especially if switches are added so that users can opt-out of features.
+I can't guarantee I'll add it (if it's something along the lines of things from What's Missing section below, it's more likely) but pull requests are welcome, especially if switches are added so that users can opt-out of features.
 
 ## Gotchas
 
@@ -513,16 +518,16 @@ I will spend some time on one particular scenario, though - SolidBackup vs. Soli
 | :---               | :---             | :---      | :---  |
 | Hands-off, built-in| Yes              | No        | Can be easily consumed via the SF API |
 | Customization      | No               | Yes       | Downside of "hands-off, built-in" above |
-| Security           | unencrypted      | encrypted | SB needs a secured client-side OS [1] |
-| S3 space & bandwidth efficiency       | intra-Volume | it depends | See [2] |
-| Tags               | basic            | advanced  | see [3] |
+| Encryption         | unencrypted      | encrypted | SB needs to work from a secure S3 client-side OS [1] |
+| S3 space & bandwidth efficiency | intra-Volume    | it depends | See [2] |
+| Backup tags        | basic            | advanced  | see [3] |
 | Manageability      | basic            | advanced  | see [4] |
 | Local efficiency (img backup) | high  | intermediate | see [5] |
 | Local efficiency (file backup)| -     | high      | see [6] |
 | Hybrid cloud       | No               | Yes       | see [7] |
 | Restore to any SF cluster | Yes       | Yes       | Backups from one SolidFire cluster can be restored to another |
 | Containers/K8s integration| basic     | intermediate | see [8] |
-| Backup performance | fixed            | flexible  | see [9] |
+| Backup performance | inflexible       | flexible  | see [9] |
 | Local efficiency (cluster resources)| high | low  | see [10] |
 | Application-consistent backup | hard  | easy      | If you can create application-consistent snapshot, SolidSync will clone from that snapshot. See [11] |
 
@@ -534,7 +539,7 @@ I will spend some time on one particular scenario, though - SolidBackup vs. Soli
 
 [4] Because SB is a DIY solution, you can do whatever you fancy (for example, change Restic with another engine). SF Backup's biggest advantage is integration in the SolidFire UI, log/event system and "time remaining" metric is available in the UI and via the API.
 
-[5] Let's ignore *file-based* backup because SolidFire backup to S3 doesn't use it. For *image* backup, both approaches read entire volume contents, but SolidFire Backup to S3 uses less compute resources as it runs from SolidFire storage nodes. If you completely emulate SolidFire's Backup to S3 by using SolidBackup fo rimage backup, you'll read the same amount of iSCSI volume data and use network bandwidth to hypervisor/VM.
+[5] Let's ignore *file-based* backup because SolidFire backup to S3 doesn't use it. For *image* backup, both approaches read the entire volume contents of the volume they back up, but SolidFire Backup to S3 uses less compute resources as it runs from SolidFire storage nodes. If you completely emulate SolidFire's Backup to S3 by using SolidBackup for image backup, you read the same amount of iSCSI volume data and use network bandwidth to get that data hypervisor/VM where backup script is running.
 
 [6] Assuming you can mount the clone file system (should be fine for ext2, ext3, xfs, and NTFS (maybe in Linux, but certainly in Windows, if you set up a Windows VM)), backup efficiency of SolidBackup is high. Instead of reading the entire 50 GB volume and backing up whatever you find it in, you read the files *you want* (others may be excluded) so instead of backing up 40 GB (even if it gets compressed down to 20 GB), you can backup 10 GB of DB files and compress them to 5 GB. And restore them some 10% of the time (5 GB vs. 40 GB)
 
@@ -546,7 +551,7 @@ I will spend some time on one particular scenario, though - SolidBackup vs. Soli
 
 [10] By default, SolidBackup creates clones and keeps them around. That means, unless you change the script to make it work in batches and/or create new clones every time, a cluster with 1,000 volumes will have 1,000 clones lying around, and (thanks to 2x the amount of volumes) consume 2x as much SolidFire metadata space. So as-is, SolidBackup will consume 2x metadata space, 2x inactive volumes, and (during backup) 2x active volumes. SolidBackup could be changed to use less resources, but by default it doesn't because usually this won't be a problem. Incrased active volume connections are the easiest to address as backup commands can be executed in batches with only minor changes to SolidBackup script (to not run Ansible and let the admin run it just-in-time before each backup job).
 
-[11] If you can shutdown or suspend (freeze) your workloads when you initiate SolidSync on the Source volume, you'll get an application-consistent clone. But if you have 300 volumes, it may take 10 minutes for the last CopyVolume job to get dispatched. You could add another volume to each app, and dump (backup) app data to it, which would work fine with both Backup to S3 and SolidSync, but it would increase capacity utilization so E-Series iSCSI storage would be better for this "D2D" approach. For a live application without extra disks, if you can freeze it at 11:49:50 and initiate a SolidFire snapshot at 11:50:00, you can SolidSync it later (as long as your snapshot age is lower than the max set in SolidSync, and that figure can be changed.)
+[11] If you can shutdown or suspend (freeze) your workloads when you initiate SolidSync on the Source volume, you'll get an application-consistent clone. But if you have 300 volumes, it may take 10 minutes for the last CopyVolume job to get dispatched. You could add another volume to each app, and dump (backup) app data to it, which would work fine with both Backup to S3 and SolidSync, but it would increase capacity utilization so E-Series iSCSI storage would be better for this "D2D" approach. For a live application without extra disks, if you can freeze it at 11:49:50 and initiate a SolidFire snapshot at 11:50:00, you can SolidSync it later (as long as your snapshot age is lower than the max set in SolidSync, and that figure can be changed).
 
 ## What's missing
 
@@ -556,10 +561,11 @@ SolidSync and SolidBackup aim to be bare-bones, simple and generic.
 
 Some things that I'd like to see improved: 
 
-- Rewrite SolidSync to be simpler
+- Rewrite SolidSync to be simpler and be able to retry clone jobs
 - For SolidSync and SolidBackup, define input parameters and switches to avoid hard-coded configuration values
-- Scripted interface for the mainteance of the SolidBakcup config file: config.psd1 is hard to edit, also mountpoints in /mnt/ as well as Ansible JSON files need to be removed as volume pairs are removed from the config file to avoid manual maintenance of config file.
+- Scripted interface for the mainteance of the SolidBakcup config file: config.psd1 is hard to edit, also mountpoints in /mnt/ as well as Ansible JSON files need to be removed as volume pairs are removed from the config file to avoid manual maintenance of the config file
 - Function to analyze logs and create reports of SolidSync and SolidBackup runs
-- Log and metrics forwarding for SolidSync and SolidBackup: this is relatively easy (to send sync job details to Elastic and such)
+- Log and metrics forwarding for SolidSync and SolidBackup to send sync job details to a log forwarder
 - Switch for the choice of backup utility so that we can generate jobs for other popular backup utilities
-- Once both SolidSync and SolidBackup better organized, turn them into one PowerShell module(s)
+- Once both SolidSync and SolidBackup better organized, turn them into one PowerShell module
+

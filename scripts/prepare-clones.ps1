@@ -35,6 +35,10 @@ function SbNewClone {
     $VolumeCloneName = "solidbackup-" + $VolumeOrig.Name
     $VolumeClone = (New-SFClone -Name $VolumeCloneName -VolumeID $SrcId -NewAccountID $SbAccountId)
 
+    Write-Mesage "Cloning a volume is async operation - wait 20 seconds before we continue"
+    Start-Sleep 20
+    Write-Message "If Add-SFVolumeToVolumeAccessGroup errs due to clone operation still ongoing, simply re-run the command after clone volume is ready"
+
     $null = Add-SFVolumeToVolumeAccessGroup -VolumeID ($VolumeClone).VolumeID -VolumeAccessGroupID $SbVagId
     $null = Set-SFVolume -VolumeID ($VolumeClone).VolumeID -QoSPolicyID $SbQosPolicyId -Confirm:$False
     Write-Host "Src Id:" $SrcId
