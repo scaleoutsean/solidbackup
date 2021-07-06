@@ -65,10 +65,10 @@ Among two other SolidBackup repositories on Github (I realized this too late), o
 
 ## How does SolidBackup do that
 
-| Step 1                      | Step 2                     | Step 3                         | Step 4           |
-| :---                        | :---                       | :---                           | :---             |
-| Prepare clones, config file | SolidSync: copy Src to Tgt | SolidBacup: generate templates | Run bacukp script|
-| see [1]                     | see [2]                    | see [3]                        | see [4] |
+| Step 1                      | Step 2                     | Step 3                           | Step 4           |
+| :---                        | :---                       | :---                             | :---             |
+| Prepare clones, config file | SolidSync: copy Src to Tgt | SolidBackup: auto-generate backup| Run backup script|
+| see [1]                     | volumes, see [2]           | commands (script), see [3]       | see [4]          |
 
 [1] Example configuration file (with two pairs) and a screenshot of three Src-Tgt volume pairs prepared in SolidFire
 
@@ -309,13 +309,15 @@ One is good, if your SolidBackup VM is one, and it can complete job in time.
 
 If it can't, or if you need several, use additional backup repositories per cluster (that will decrease efficiency with Restic, as there's no cross-repository deduplication).
 
-### How can I avoid having one SolidSync or SolidBacup operator have access to all SolidFire (clone) volumes?
+### How to avoid having one SolidSync or SolidBackup instance/operator have access to all SolidFire Target (clone) volumes
 
-You can create several backup repositories and run several SolidBackup instances one per team or department, each completely independent of each other. In this case I would create a dedicated SolidFire cluster admin account for each SolidBackup operator so that at least you know which admin did what.
+You can create several backup repositories and run several SolidBackup instances one per team or department, each completely independent of each other. In this case we would create a dedicated SolidFire cluster admin account for each SolidBackup operator so that at least you know which admin did what. Each SolidSync/SolidBackup instance would use own credentials, own volume pairs and own repository.
 
-Each application owner could simply use Restic and avoid the need for SolidSync and SolidBackup.
+Another approach is to have one administrator in charge of SolidSync, and multiple "solidbackup" storage accounts on SolidFire. Then several SolidBackup VM or container instances just need to login to "their" Target/Clone volumes and mount those that need filesystem backup, to be able to conduct backup (and restore to Target (clone) volumes). Here there would also be many repositories (as many as application owners, for example).
 
-It appears it's best to have as few repositories as possible, use file-based backup, and encourage users to encrypt sensitive data (such as database columns or tables) so that file-based backup becomes feasible, and use image-style backup on encrypted smaller volumes with data that cannot be encrypted).
+In a self-service approach, each application owner could simply use Restic and avoid the need for SolidSync and SolidBackup. SolidSync could be executed by one administrator for all application owners. Each application owner would have own backup repository and be in charge of backup, restore and maintenance.
+
+It appears it's best to have as few repositories as possible, use file-based backup, and encourage users to encrypt sensitive data (such as database columns or tables) so that file-based backup becomes feasible, and use image-style backup on encrypted smaller volumes with data that cannot be encrypted). That way you can avoid having many repositories and everyone having to become skilled in data protection they use.
 
 ### What about ZFS and other filesystems not listed here
 
