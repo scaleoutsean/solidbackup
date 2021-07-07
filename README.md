@@ -67,7 +67,7 @@ Among two other SolidBackup repositories on Github (I realized this too late), o
 
 | Step 1                      | Step 2                     | Step 3                         | Step 4           |
 | :---                        | :---                       | :---                           | :---             |
-| Prepare clones, config file | SolidSync: copy Src to Tgt | SolidBacup: generate templates | Run bacukp script|
+| Create clones, config file  | SolidSync: copy Src to Tgt | SolidBackup: create templates, scripts | Run backup script|
 | see [1]                     | see [2]                    | see [3]                        | see [4] |
 
 [1] Example configuration file (with two pairs) and a screenshot of three Src-Tgt volume pairs prepared in SolidFire
