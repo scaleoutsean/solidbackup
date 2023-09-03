@@ -3,6 +3,9 @@
 - [SolidBackup](#solidbackup)
   - [What is SolidBackup](#what-is-solidbackup)
   - [How does SolidBackup do that](#how-does-solidbackup-do-that)
+    - [Clone Volumes](#clone-volumes)
+    - [SolidBackup](#solidbackup-1)
+    - [Demo videos](#demo-videos)
   - [Is SolidBackup for you](#is-solidbackup-for-you)
   - [Install](#install)
   - [Configure](#configure)
@@ -22,14 +25,14 @@
     - [Which filesystems are supported for file-based backup](#which-filesystems-are-supported-for-file-based-backup)
     - [Optimal number of backup jobs](#optimal-number-of-backup-jobs)
     - [Can I use 8 VMs to run backup to the same repository](#can-i-use-8-vms-to-run-backup-to-the-same-repository)
-    - [What about NTFS filesystems](#what-about-ntfs-filesystems)
+    - [What about NTFS](#what-about-ntfs)
     - [How many backup repositories per each SolidFire cluster](#how-many-backup-repositories-per-each-solidfire-cluster)
     - [How can I avoid having one SolidSync or SolidBacup operator have access to all SolidFire (clone) volumes?](#how-can-i-avoid-having-one-solidsync-or-solidbacup-operator-have-access-to-all-solidfire-clone-volumes)
     - [What about ZFS and other filesystems not listed here](#what-about-zfs-and-other-filesystems-not-listed-here)
     - [What about dynamic volumes (Windows, LVM on Linux, etc)](#what-about-dynamic-volumes-windows-lvm-on-linux-etc)
     - [How do I find my backups after I've executed SolidBackup-generated backup script for Restic](#how-do-i-find-my-backups-after-ive-executed-solidbackup-generated-backup-script-for-restic)
     - [How do I automate restores](#how-do-i-automate-restores)
-    - [Backup of SolidBackup configuration file(s)](#backup-of-solidbackup-configuration-files)
+    - [Backup of SolidBackup configuration files](#backup-of-solidbackup-configuration-files)
     - [Use SolidFire snapshots to lower the need for backup-based restores](#use-solidfire-snapshots-to-lower-the-need-for-backup-based-restores)
     - [I don't like how this or that is done, can you change it](#i-dont-like-how-this-or-that-is-done-can-you-change-it)
     - [Can you add support for ....](#can-you-add-support-for-)
@@ -60,6 +63,8 @@ If you have some PowerShell skills, SolidBackup makes it easy to:
 - create ready-to-execute Ansible templates and backup job commands to back up cloned volumes to a destination of your choosing
 
 Currently SolidBackup consists of two sample scripts (one of which generates other scripts) that are meant to be used or referenced by DevOps folks who know what they're doing.
+
+The first script (volume copy/clone script) can be used to update volumes that are backed up with [SimpleBackups' File Backup jobs](https://scaleoutsean.github.io/2023/09/03/simplebackup-with-solidbackup.html). Another way to put it: if you'd like to use SimpleBackups with SolidFire you can SolidBackup to freshen volumes, mount them and then call Web hooks of Simple Backups' jobs, which eliminates the need to install Simple Backups agent on generic production servers.
 
 Among two other SolidBackup repositories on Github (I realized this too late), only one is active - it's a [backup utility for Windows](https://github.com/dbolton/SolidBackup). I will provide links to other active repos with the same name to avoid confusion.
 
